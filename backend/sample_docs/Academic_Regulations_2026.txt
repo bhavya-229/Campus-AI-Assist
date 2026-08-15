@@ -1,0 +1,31 @@
+================================================================================
+CAMPUS ACADEMIC REGULATIONS & ATTENDANCE POLICY (REVISED 2026)
+================================================================================
+Document Code: AR-2026-V1
+Applicable To: All Undergraduate and Postgraduate Students (B.Tech, MCA, MBA, M.Tech)
+
+1. ATTENDANCE REQUIREMENTS
+1.1 Minimum Mandatory Attendance:
+Every registered student is required to maintain a minimum of 75% aggregate attendance in each individual course/subject (both theory lectures and laboratory practicals) in order to be eligible to appear for the End-Semester Examination.
+
+1.2 Condonation of Attendance Shortage (Medical & Special Grounds):
+Students with attendance between 65% and 74.9% may apply for attendance condonation under special circumstances such as serious medical illness, hospitalization, or representing the college/university in authorized sports, cultural, or technical competitions.
+- Medical certificates must be submitted to the Head of Department (HOD) within 7 working days of recovery.
+- A condonation fee of Rs. 1,000 per subject must be remitted after approval by the Dean of Academic Affairs.
+- Students with attendance below 65% are strictly NOT eligible for condonation and will be awarded an 'F-Attend' grade and must re-register for the course in subsequent semesters.
+
+2. COURSE REGISTRATION & CREDIT SYSTEM
+2.1 Credit Framework:
+- Regular Theory Course: 3 to 4 Credits (3 hours lecture + 1 hour tutorial per week).
+- Practical / Laboratory Course: 2 Credits (3 hours lab session per week).
+- Master of Computer Applications (MCA) requires a minimum cumulative total of 84 credits across 4 semesters for graduation.
+
+3. INTERNAL EVALUATION & CONTINUOUS ASSESSMENT
+3.1 Component Breakdown (Total 100 Marks per course):
+- Continuous Internal Evaluation (CIE): 40 Marks
+  * Mid-Term Examination 1: 15 Marks
+  * Mid-Term Examination 2: 15 Marks
+  * Assignments, Quizzes & Case Studies: 10 Marks
+- Semester End Examination (SEE): 60 Marks (Written comprehensive exam of 3 hours duration).
+3.2 Minimum Passing Criteria:
+A student must secure a minimum of 40% in SEE (24 out of 60 marks) and an aggregate of 45% combined (CIE + SEE) to clear the course.

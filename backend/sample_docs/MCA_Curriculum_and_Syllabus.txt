@@ -1,0 +1,45 @@
+================================================================================
+MCA CURRICULUM & COURSE SYLLABUS - SEMESTER 2
+================================================================================
+Department: Department of Computer Applications
+Program: Master of Computer Applications (MCA) - 2 Year Degree
+
+COURSE 1: DATABASE MANAGEMENT SYSTEMS (COURSE CODE: MCA201)
+Credits: 4 | Core Subject
+Instructor: Dr. Sharma
+
+Unit 1: Relational Data Model & SQL Architecture
+- Entity-Relationship (ER) Modeling, Extended ER features, Weak entity sets.
+- Relational algebra operations: Selection, Projection, Cartesian Product, Joins, Set operations.
+- Advanced SQL: Nested subqueries, Correlated subqueries, Aggregate functions, Views, Triggers, and Stored Procedures.
+
+Unit 2: Database Design & Normalization Theory
+- Functional Dependencies, Closure of attribute sets, Armstrong's Axioms.
+- Normal Forms: First Normal Form (1NF), Second Normal Form (2NF), Third Normal Form (3NF), Boyce-Codd Normal Form (BCNF), Fourth Normal Form (4NF).
+- Lossless join decomposition and Dependency preservation algorithms.
+
+Unit 3: Transaction Management & Concurrency Control
+- ACID Properties: Atomicity, Consistency, Isolation, Durability.
+- Serializability: Conflict Serializability and View Serializability.
+- Concurrency Control Protocols: Lock-based protocols (2-Phase Locking, Strict 2PL), Timestamp ordering, Deadlock detection and prevention.
+
+Unit 4: Indexing, Storage & NoSQL Overview
+- File organizations, B-Tree and B+ Tree Indexing techniques, Hashing.
+- Introduction to NoSQL databases: Key-Value stores, Document stores (MongoDB), Columnar stores.
+
+COURSE 2: DATA STRUCTURES & ALGORITHMS (COURSE CODE: MCA202)
+Credits: 4 | Core Subject
+- Trees, AVL Trees, Red-Black Trees, Heaps and Priority Queues.
+- Graph Algorithms: BFS, DFS, Dijkstra's Shortest Path, Prim's and Kruskal's MST.
+- Dynamic Programming, Greedy Method, Divide and Conquer, Complexity Analysis (Big-O, Omega, Theta).
+
+COURSE 3: ADVANCED JAVA PROGRAMMING (COURSE CODE: MCA203)
+Credits: 3 | Core Subject
+- Java Collections Framework: List, Set, Map, ArrayList, HashMap, PriorityQueue.
+- Multithreading, Concurrency Utilities, Synchronization, Thread Pools.
+- Spring Boot Basics, RESTful Web Services, JPA and Hibernate ORM.
+
+COURSE 4: INTERNET OF THINGS & EMBEDDED SYSTEMS (COURSE CODE: MCA204)
+Credits: 3 | Core Subject
+- IoT Architecture, Sensors and Actuators, Microcontrollers (Arduino & Raspberry Pi).
+- Protocols: MQTT, CoAP, HTTP, WebSockets. Edge Computing and Cloud IoT Platforms.

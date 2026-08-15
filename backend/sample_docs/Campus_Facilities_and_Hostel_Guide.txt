@@ -1,0 +1,30 @@
+================================================================================
+CAMPUS SERVICES, FACILITIES, HOSTEL & IT SUPPORT GUIDE
+================================================================================
+Document Code: CAMPUS-GUIDE-2026
+
+1. CENTRAL LIBRARY
+- Operating Hours: Monday to Saturday: 8:00 AM – 10:00 PM; Sundays & Holidays: 10:00 AM – 4:00 PM.
+- Book Borrowing Quota: Postgraduate/MCA Students: 6 books for a duration of 21 days.
+- Overdue Fine: Rs. 2 per book per day.
+- Digital Library: 24/7 access to IEEE Xplore, ACM Digital Library, SpringerLink, and ScienceDirect via campus VPN.
+
+2. CAMPUS WI-FI & IT SUPPORT
+- Network SSID: `Campus_Student_HighSpeed`
+- Login Credentials: Use your Student ID (e.g., MCA2025-042) and campus portal password.
+- MAC Address Registration: A maximum of 2 devices (e.g. laptop + smartphone) can be registered per student.
+- IT Helpdesk: Room 104, Ground Floor, Administrative Block B. Email: itsupport@college.edu or raise a Support Ticket on Campus AI Assist.
+
+3. HOSTEL & RESIDENTIAL REGULATIONS
+- In-Time Curfew: All hostel residents must enter hostel premises by 9:30 PM on weekdays and 10:30 PM on Saturdays.
+- Night Out / Leave Passes: Must be applied 24 hours in advance via the student portal and verified with parental approval SMS.
+- Mess Timings:
+  * Breakfast: 7:30 AM – 9:00 AM
+  * Lunch: 12:30 PM – 2:00 PM
+  * Snacks: 4:30 PM – 5:30 PM
+  * Dinner: 7:30 PM – 9:15 PM
+
+4. STUDENT ID CARD SERVICES
+- In case of loss or damage of College ID card, submit a support request ticket in category 'ID card'.
+- Duplicate ID card fee is Rs. 250 payable at the accounts counter or online.
+- New card will be issued within 3 working days from Student Affairs Office.
