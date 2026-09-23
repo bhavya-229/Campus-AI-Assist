@@ -9,13 +9,15 @@ import {
   AlertCircle,
   BotMessageSquare,
   X,
+  RefreshCw,
 } from 'lucide-react';
 import { studentApi } from '../services/api';
 
-const Assignments = ({ setActiveTab }) => {
+const Assignments = ({ setActiveTab, refreshKey }) => {
   const [assignments, setAssignments] = useState([]);
   const [filter, setFilter] = useState('All'); // 'All', 'Pending', 'Completed'
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Form State
@@ -27,15 +29,17 @@ const Assignments = ({ setActiveTab }) => {
 
   useEffect(() => {
     loadAssignments();
-  }, []);
+  }, [refreshKey]);
 
   const loadAssignments = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await studentApi.getAssignments();
       setAssignments(res);
     } catch (err) {
       console.error('Error fetching assignments:', err);
+      setError('Failed to load assignments.');
     } finally {
       setLoading(false);
     }
@@ -119,10 +123,16 @@ const Assignments = ({ setActiveTab }) => {
           ))}
         </div>
 
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={16} />
-          <span>New Assignment</span>
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn-secondary" onClick={loadAssignments} title="Refresh tasks">
+            <RefreshCw size={15} />
+            <span>Refresh</span>
+          </button>
+          <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={16} />
+            <span>New Assignment</span>
+          </button>
+        </div>
       </div>
 
       {/* Assignment List */}

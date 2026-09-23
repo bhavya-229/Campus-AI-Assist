@@ -10,26 +10,30 @@ import {
   Clock,
   Sparkles,
   BookOpen,
+  RefreshCw,
 } from 'lucide-react';
 import { studentApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const Dashboard = ({ setActiveTab }) => {
+const Dashboard = ({ setActiveTab, refreshKey }) => {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadDashboard();
-  }, []);
+  }, [refreshKey]);
 
   const loadDashboard = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await studentApi.getDashboard();
       setData(res);
     } catch (err) {
       console.error('Error loading dashboard:', err);
+      setError('Failed to fetch dashboard data. Please make sure the backend is running.');
     } finally {
       setLoading(false);
     }
@@ -39,6 +43,28 @@ const Dashboard = ({ setActiveTab }) => {
     return (
       <div className="page-wrapper" style={{ textAlign: 'center', padding: '60px 0' }}>
         <p style={{ color: 'var(--text-secondary)' }}>Loading campus student data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="page-wrapper" style={{ textAlign: 'center', padding: '60px 0' }}>
+        <div style={{
+          maxWidth: '460px',
+          margin: '0 auto',
+          padding: '24px',
+          backgroundColor: 'var(--bg-card)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-subtle)'
+        }}>
+          <AlertTriangle size={36} color="#ef4444" style={{ margin: '0 auto 12px auto' }} />
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '16px' }}>{error}</p>
+          <button className="btn-primary" onClick={loadDashboard}>
+            <RefreshCw size={14} />
+            <span>Retry</span>
+          </button>
+        </div>
       </div>
     );
   }
@@ -221,7 +247,7 @@ const Dashboard = ({ setActiveTab }) => {
             <div className="panel-header">
               <h3>
                 <Clock size={18} color="#6366f1" />
-                <span>Today's Classes (Monday)</span>
+                <span>Today's Classes</span>
               </h3>
               <button
                 className="btn-secondary"
@@ -234,27 +260,31 @@ const Dashboard = ({ setActiveTab }) => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {data?.today_classes?.map((slot) => (
-                <div key={slot.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                  padding: '12px',
-                  backgroundColor: 'var(--bg-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                  borderLeft: '4px solid var(--accent-primary)'
-                }}>
-                  <div style={{ minWidth: '130px', fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                    {slot.start_time} - {slot.end_time}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: '13px' }}>{slot.course_code} - {slot.course_name}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                      Room: {slot.room} • Instructor: {slot.instructor}
+              {data?.today_classes?.length === 0 ? (
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>No classes scheduled for today.</p>
+              ) : (
+                data?.today_classes?.map((slot) => (
+                  <div key={slot.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-subtle)',
+                    borderRadius: 'var(--radius-md)',
+                    borderLeft: '4px solid var(--accent-primary)'
+                  }}>
+                    <div style={{ minWidth: '130px', fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                      {slot.start_time} - {slot.end_time}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: '13px' }}>{slot.course_code} - {slot.course_name}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        Room: {slot.room} • Instructor: {slot.instructor}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

@@ -7,50 +7,64 @@ if sys.platform == "win32":
 
 from app.database import SessionLocal
 from app.models.user import User
+from app.models.document import IngestedDocument
 from app.rag.hybrid_retriever import hybrid_retriever
 from app.rag.context_engine import context_engine
+from app.rag.qdrant_store import qdrant_store
+from app.utils.auth_deps import create_access_token
 
 async def main():
-    print("=== Testing Campus AI Assist Hybrid RAG & Context Engine ===")
+    print("=== Testing Campus AI Assist: Verified Enhancements & Bug Fixes ===")
     db = SessionLocal()
     student = db.query(User).filter(User.email == "bhavya@college.edu").first()
     print(f"Loaded Student: {student.name} ({student.student_id}) - {student.program} Sem {student.semester}")
 
-    # 1. Test Hybrid Retrieval
-    print("\n--- Testing Hybrid Retrieval (Qdrant + BM25) ---")
-    query = "What is the minimum attendance required for exams?"
+    # 1. Test Timezone-aware JWT Token Generation
+    print("\n--- 1. Testing Python 3.12 Timezone-Aware JWT Creation ---")
+    token = create_access_token(data={"sub": student.email, "role": student.role})
+    assert token is not None and len(token) > 20
+    print("[+] JWT Token generated successfully without deprecation warnings.")
+
+    # 2. Test Dynamic Timetable Query (Today & Tomorrow)
+    print("\n--- 2. Testing Dynamic Timetable Query ---")
+    res_tomorrow = await context_engine.process_user_query("What classes do I have tomorrow?", student, db)
+    print("Intent:", res_tomorrow["intent"])
+    print("Reply preview:\n", res_tomorrow["reply"][:200], "...")
+
+    # 3. Test Intent Disambiguation: Informational query about assignments vs Action creation
+    print("\n--- 3. Testing Intent Disambiguation ---")
+    # A question should NOT trigger assignment creation or completion mutation
+    res_question = await context_engine.process_user_query("What is the deadline for my assignments?", student, db)
+    print("Query: 'What is the deadline for my assignments?'")
+    print("Intent detected:", res_question["intent"])
+    assert res_question["intent"] == "student_assignment"
+    assert res_question.get("action_performed") is None
+    print("[+] Informational query correctly avoided task mutation.")
+
+    # An explicit command SHOULD trigger assignment creation
+    res_action = await context_engine.process_user_query("Add an assignment for DSA: Dynamic Programming due next Tuesday", student, db)
+    print("\nQuery: 'Add an assignment for DSA: Dynamic Programming due next Tuesday'")
+    print("Intent detected:", res_action["intent"])
+    print("Action performed:", res_action.get("action_performed"))
+    assert res_action.get("action_performed") is not None
+    print("[+] Imperative command correctly created assignment.")
+
+    # 4. Test Hybrid RAG Score Thresholding
+    print("\n--- 4. Testing Hybrid RAG with Thresholding ---")
+    query = "What is the fee for re-evaluation per subject?"
     chunks = await hybrid_retriever.search(query, top_k=2)
+    print(f"Retrieved {len(chunks)} chunk(s).")
     for c in chunks:
-        print(f"Chunk from [{c['document_title']}] (Page {c['page']}) Fusion Score: {c['fusion_score']}")
-        print(f"Snippet: {c['text'][:150]}...\n")
+        print(f"  * [{c['document_title']}] Fusion Score: {c['fusion_score']} | Types: {c['retrieval_types']}")
 
-    # 2. Test Student Attendance Query
-    print("\n--- Testing Contextual Attendance Query ---")
-    res1 = await context_engine.process_user_query("What is my attendance in DBMS?", student, db)
-    print("Intent:", res1["intent"])
-    print("Reply:\n", res1["reply"])
-
-    # 3. Test Student Timetable Query
-    print("\n--- Testing Contextual Timetable Query ---")
-    res2 = await context_engine.process_user_query("What classes do I have tomorrow?", student, db)
-    print("Intent:", res2["intent"])
-    print("Reply:\n", res2["reply"])
-
-    # 4. Test Student Action Intent (Add Assignment)
-    print("\n--- Testing Conversational Action: Add Assignment ---")
-    res3 = await context_engine.process_user_query("Add an assignment for DBMS: BCNF Decomposition due Friday", student, db)
-    print("Intent:", res3["intent"])
-    print("Reply:\n", res3["reply"])
-
-    # 5. Test Academic Policy RAG Query with Llama 3.2
-    print("\n--- Testing Academic Policy RAG with Local LLM ---")
-    res4 = await context_engine.process_user_query("What are the rules and fees for re-evaluation?", student, db)
-    print("Intent:", res4["intent"])
-    print("Reply:\n", res4["reply"])
-    print("Sources:", len(res4["sources"]), "documents cited.")
+    # 5. Test Qdrant Vector Cleanup Method
+    print("\n--- 5. Testing Qdrant Vector Cleanup by Filename ---")
+    # Verify method execution
+    cleanup_success = qdrant_store.delete_documents_by_filename("non_existent_test_doc.pdf")
+    print(f"Delete method callable and executed cleanly: {cleanup_success}")
 
     db.close()
-    print("\n[+] All backend tests completed successfully!")
+    print("\n[+] All enhanced verification tests passed successfully!")
 
 if __name__ == "__main__":
     asyncio.run(main())

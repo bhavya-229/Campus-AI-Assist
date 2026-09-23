@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarCheck2, AlertTriangle, CheckCircle2, Info, Calculator, Sparkles } from 'lucide-react';
+import { CalendarCheck2, AlertTriangle, CheckCircle2, Info, Calculator, Sparkles, RefreshCw } from 'lucide-react';
 import { studentApi } from '../services/api';
 
-const Attendance = ({ setActiveTab }) => {
+const Attendance = ({ setActiveTab, refreshKey }) => {
   const [attendanceList, setAttendanceList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadAttendance();
-  }, []);
+  }, [refreshKey]);
 
   const loadAttendance = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await studentApi.getAttendance();
       setAttendanceList(res);
     } catch (err) {
       console.error('Error fetching attendance:', err);
+      setError('Failed to load attendance records.');
     } finally {
       setLoading(false);
     }
@@ -77,6 +80,10 @@ const Attendance = ({ setActiveTab }) => {
             {isOverallWarning ? <AlertTriangle size={16} /> : <CheckCircle2 size={16} />}
             <span>{isOverallWarning ? 'Attendance Warning' : 'Exam Eligible'}</span>
           </div>
+
+          <button className="btn-secondary" onClick={loadAttendance} title="Refresh">
+            <RefreshCw size={14} />
+          </button>
         </div>
       </div>
 
@@ -90,9 +97,6 @@ const Attendance = ({ setActiveTab }) => {
         {attendanceList.map((item) => {
           const isWarning = item.percentage < 75;
           const isCritical = item.percentage < 70;
-
-          // How many consecutive classes needed to reach 75%
-          // (attended + x) / (total + x) >= 0.75 => attended + x >= 0.75 total + 0.75 x => 0.25 x >= 0.75 total - attended => x = (0.75*total - attended)/0.25
           const neededTo75 = Math.max(0, Math.ceil((0.75 * item.total_classes - item.attended_classes) / 0.25));
 
           return (

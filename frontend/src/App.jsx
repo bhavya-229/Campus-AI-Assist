@@ -14,6 +14,12 @@ import AdminKnowledge from './pages/AdminKnowledge';
 function AppContent() {
   const { isAuthenticated, user } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setRefreshCount((prev) => prev + 1);
+  };
 
   if (!isAuthenticated) {
     return <Login />;
@@ -22,33 +28,33 @@ function AppContent() {
   const renderActivePage = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard setActiveTab={setActiveTab} />;
+        return <Dashboard setActiveTab={handleTabChange} refreshKey={refreshCount} />;
       case 'assistant':
         return <Assistant />;
       case 'attendance':
-        return <Attendance setActiveTab={setActiveTab} />;
+        return <Attendance setActiveTab={handleTabChange} refreshKey={refreshCount} />;
       case 'assignments':
-        return <Assignments setActiveTab={setActiveTab} />;
+        return <Assignments setActiveTab={handleTabChange} refreshKey={refreshCount} />;
       case 'timetable':
-        return <Timetable />;
+        return <Timetable refreshKey={refreshCount} />;
       case 'support':
-        return <Support />;
+        return <Support refreshKey={refreshCount} />;
       case 'admin':
         return user?.role === 'admin' ? (
-          <AdminKnowledge />
+          <AdminKnowledge refreshKey={refreshCount} />
         ) : (
-          <Dashboard setActiveTab={setActiveTab} />
+          <Dashboard setActiveTab={handleTabChange} refreshKey={refreshCount} />
         );
       default:
-        return <Dashboard setActiveTab={setActiveTab} />;
+        return <Dashboard setActiveTab={handleTabChange} refreshKey={refreshCount} />;
     }
   };
 
   return (
     <div className="app-container">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} />
       <div className="main-content">
-        <Navbar activeTab={activeTab} onOpenChat={() => setActiveTab('assistant')} />
+        <Navbar activeTab={activeTab} onOpenChat={() => handleTabChange('assistant')} />
         {renderActivePage()}
       </div>
     </div>

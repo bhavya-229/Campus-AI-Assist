@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { CalendarDays, Clock, MapPin, User, BookOpen, AlertCircle } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, User, BookOpen, AlertCircle, RefreshCw } from 'lucide-react';
 import { studentApi } from '../services/api';
 
-const Timetable = () => {
+const Timetable = ({ refreshKey }) => {
   const [timetable, setTimetable] = useState([]);
   const [exams, setExams] = useState([]);
   const [selectedDay, setSelectedDay] = useState('Monday');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [refreshKey]);
 
   const loadData = async () => {
     try {
       setLoading(true);
+      setError(null);
       const [tRes, eRes] = await Promise.all([
         studentApi.getTimetable(),
         studentApi.getExams(),
@@ -25,6 +27,7 @@ const Timetable = () => {
       setExams(eRes);
     } catch (err) {
       console.error('Error fetching timetable/exams:', err);
+      setError('Failed to load schedule data.');
     } finally {
       setLoading(false);
     }
@@ -38,27 +41,34 @@ const Timetable = () => {
       <div style={{
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: '8px',
         marginBottom: '24px',
-        overflowX: 'auto',
-        paddingBottom: '4px'
+        flexWrap: 'wrap'
       }}>
-        {days.map((d) => (
-          <button
-            key={d}
-            onClick={() => setSelectedDay(d)}
-            className="btn-secondary"
-            style={{
-              backgroundColor: selectedDay === d ? 'var(--accent-indigo-bg)' : 'var(--bg-card)',
-              color: selectedDay === d ? '#60a5fa' : 'var(--text-secondary)',
-              borderColor: selectedDay === d ? 'var(--accent-primary)' : 'var(--border-subtle)',
-              fontWeight: selectedDay === d ? 700 : 500,
-              padding: '10px 18px'
-            }}
-          >
-            <span>{d}</span>
-          </button>
-        ))}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {days.map((d) => (
+            <button
+              key={d}
+              onClick={() => setSelectedDay(d)}
+              className="btn-secondary"
+              style={{
+                backgroundColor: selectedDay === d ? 'var(--accent-indigo-bg)' : 'var(--bg-card)',
+                color: selectedDay === d ? '#60a5fa' : 'var(--text-secondary)',
+                borderColor: selectedDay === d ? 'var(--accent-primary)' : 'var(--border-subtle)',
+                fontWeight: selectedDay === d ? 700 : 500,
+                padding: '10px 18px'
+              }}
+            >
+              <span>{d}</span>
+            </button>
+          ))}
+        </div>
+
+        <button className="btn-secondary" onClick={loadData} title="Refresh">
+          <RefreshCw size={14} />
+          <span>Refresh</span>
+        </button>
       </div>
 
       {/* Timetable Schedule Grid */}

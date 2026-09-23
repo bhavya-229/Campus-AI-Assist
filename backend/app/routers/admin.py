@@ -81,8 +81,25 @@ def delete_document(
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Remove record
+    filename = doc.filename
+    title = doc.title
+
+    # 1. Delete vector points from Qdrant
+    qdrant_store.delete_documents_by_filename(filename)
+
+    # 2. Delete database record
     db.delete(doc)
     db.commit()
 
-    return {"message": f"Document '{doc.title}' deleted from records."}
+    # 3. Synchronize BM25 index
+    hybrid_retriever.sync_bm25_from_qdrant()
+
+    # 4. Clean up uploaded physical file if exists
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+        except Exception:
+            pass
+
+    return {"message": f"Document '{title}' ({filename}) successfully removed from SQL, Qdrant vectors, and BM25 index."}

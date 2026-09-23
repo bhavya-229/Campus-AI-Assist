@@ -81,6 +81,30 @@ class QdrantVectorStore:
         logger.info(f"Upserted {len(points)} chunks into Qdrant collection '{self.collection_name}'.")
         return len(points)
 
+    def delete_documents_by_filename(self, filename: str) -> bool:
+        """
+        Deletes all vector points associated with a specific document source file.
+        """
+        try:
+            self.client.delete(
+                collection_name=self.collection_name,
+                points_selector=rest_models.FilterSelector(
+                    filter=rest_models.Filter(
+                        must=[
+                            rest_models.FieldCondition(
+                                key="source_file",
+                                match=rest_models.MatchValue(value=filename)
+                            )
+                        ]
+                    )
+                )
+            )
+            logger.info(f"Deleted vector points for source file '{filename}' from Qdrant.")
+            return True
+        except Exception as e:
+            logger.error(f"Error deleting document '{filename}' from Qdrant: {e}")
+            return False
+
     async def similarity_search(self, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
         """
         Performs dense semantic vector search in Qdrant.

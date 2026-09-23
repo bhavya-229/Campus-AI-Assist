@@ -9,16 +9,18 @@ import {
   X,
   MessageSquare,
   ShieldCheck,
+  RefreshCw,
 } from 'lucide-react';
 import { ticketApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const Support = () => {
+const Support = ({ refreshKey }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Create form state
@@ -45,15 +47,17 @@ const Support = () => {
 
   useEffect(() => {
     loadTickets();
-  }, []);
+  }, [refreshKey]);
 
   const loadTickets = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await ticketApi.getTickets();
       setTickets(res);
     } catch (err) {
       console.error('Error fetching tickets:', err);
+      setError('Failed to load tickets.');
     } finally {
       setLoading(false);
     }
@@ -129,12 +133,18 @@ const Support = () => {
           </p>
         </div>
 
-        {!isAdmin && (
-          <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={16} />
-            <span>Create New Ticket</span>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn-secondary" onClick={loadTickets} title="Refresh tickets">
+            <RefreshCw size={15} />
+            <span>Refresh</span>
           </button>
-        )}
+          {!isAdmin && (
+            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+              <Plus size={16} />
+              <span>Create New Ticket</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Ticket List */}

@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from app.rag.qdrant_store import qdrant_store
 from app.rag.bm25_retriever import bm25_retriever
 
@@ -17,12 +17,19 @@ class HybridRetriever:
         bm25_retriever.index_documents(payloads)
         logger.info(f"BM25 index synchronized with {len(payloads)} documents from Qdrant.")
 
-    async def search(self, query: str, top_k: int = 4, alpha: float = 0.5) -> List[Dict[str, Any]]:
+    async def search(
+        self,
+        query: str,
+        top_k: int = 4,
+        alpha: float = 0.5,
+        min_score_threshold: float = 0.003
+    ) -> List[Dict[str, Any]]:
         """
         Executes Hybrid Search:
         1. Dense Vector Search via Qdrant
         2. Sparse Lexical Search via BM25
         3. Reciprocal Rank Fusion (RRF) to merge and rerank
+        4. Prunes low-relevance chunks below threshold
         """
         # Ensure BM25 has data
         if not bm25_retriever.documents:
@@ -57,6 +64,8 @@ class HybridRetriever:
 
         final_chunks = []
         for item in ranked[:top_k]:
+            if item["score"] < min_score_threshold and final_chunks:
+                continue # Skip very low relevance chunks if we already have higher quality matches
             doc = dict(item["doc"])
             doc["fusion_score"] = round(item["score"], 4)
             doc["retrieval_types"] = []

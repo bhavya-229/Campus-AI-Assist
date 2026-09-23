@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { adminApi } from '../services/api';
 
-const AdminKnowledge = () => {
+const AdminKnowledge = ({ refreshKey }) => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -26,7 +26,7 @@ const AdminKnowledge = () => {
 
   useEffect(() => {
     loadDocuments();
-  }, []);
+  }, [refreshKey]);
 
   const loadDocuments = async () => {
     try {
@@ -74,12 +74,20 @@ const AdminKnowledge = () => {
   };
 
   const handleDelete = async (id, docTitle) => {
-    if (!window.confirm(`Delete document "${docTitle}"?`)) return;
+    if (!window.confirm(`Delete document "${docTitle}"? This will also purge its vector points from Qdrant and BM25 index.`)) return;
     try {
       await adminApi.deleteDocument(id);
+      setStatusMessage({
+        type: 'success',
+        text: `Document "${docTitle}" successfully removed from Qdrant and BM25 index.`,
+      });
       setDocuments((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
       console.error('Error deleting document:', err);
+      setStatusMessage({
+        type: 'error',
+        text: 'Failed to delete document from database and vector store.',
+      });
     }
   };
 

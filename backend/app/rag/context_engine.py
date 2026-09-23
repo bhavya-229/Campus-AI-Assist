@@ -1,6 +1,7 @@
 import re
 import json
 import logging
+from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 
@@ -115,52 +116,54 @@ class ContextEngine:
         lower_msg = user_message.lower().strip()
 
         # ----------------------------------------------------
-        # 1. Action Intent: Add Assignment
+        # 1. Action Intent: Add Assignment (Imperative creation command)
         # E.g. "Add DBMS assignment due Friday", "Add assignment for Java: Collections due Aug 24"
         # ----------------------------------------------------
-        if any(keyword in lower_msg for keyword in ["add assignment", "create assignment", "new assignment", "add an assignment"]):
+        if re.search(r'\b(add|create|new|schedule)\s+(an?\s+)?assignment\b', lower_msg):
             return await ContextEngine._handle_add_assignment_action(user_message, student, db, context)
 
         # ----------------------------------------------------
-        # 2. Action Intent: Mark Assignment Completed
+        # 2. Action Intent: Mark Assignment Completed (Strict imperative action)
         # E.g. "Mark my DBMS assignment as completed", "Complete assignment 2"
         # ----------------------------------------------------
-        if any(keyword in lower_msg for keyword in ["mark", "complete"]) and "assignment" in lower_msg:
+        if re.search(r'\b(mark|set)\b.*\b(as completed|as done|completed|done)\b', lower_msg) or \
+           re.search(r'^(complete|finish)\s+(my\s+)?assignment\b', lower_msg):
             return await ContextEngine._handle_complete_assignment_action(user_message, student, db, context)
 
         # ----------------------------------------------------
         # 3. Action Intent: Create Support Ticket
         # E.g. "Create ticket: ID card not working", "My ID card is lost, create support request"
         # ----------------------------------------------------
-        if any(keyword in lower_msg for keyword in ["create ticket", "raise ticket", "support request", "new ticket", "raise a ticket", "file ticket"]):
+        if any(keyword in lower_msg for keyword in ["create ticket", "raise ticket", "support request", "new ticket", "raise a ticket", "file ticket", "open ticket"]):
             return await ContextEngine._handle_create_ticket_action(user_message, student, db, context)
 
         # ----------------------------------------------------
         # 4. Student DB Direct Queries: Attendance
         # E.g. "What's my attendance?", "Show my attendance in DBMS"
         # ----------------------------------------------------
-        if "attendance" in lower_msg and any(w in lower_msg for w in ["my", "what's", "whats", "show", "check", "how much", "percentage"]):
+        if "attendance" in lower_msg and any(w in lower_msg for w in ["my", "what's", "whats", "show", "check", "how much", "percentage", "current"]):
             return ContextEngine._handle_student_attendance_query(user_message, context)
 
         # ----------------------------------------------------
         # 5. Student DB Direct Queries: Timetable / Classes
-        # E.g. "What do I have tomorrow?", "Show my timetable", "What classes today?"
+        # E.g. "What do I have tomorrow?", "Show my timetable", "What classes today?", "What classes do I have tomorrow?"
         # ----------------------------------------------------
-        if any(keyword in lower_msg for keyword in ["timetable", "schedule", "classes today", "classes tomorrow", "what do i have", "my lectures"]):
+        if any(keyword in lower_msg for keyword in ["timetable", "schedule", "my lectures", "what do i have"]) or \
+           (("class" in lower_msg or "classes" in lower_msg or "lecture" in lower_msg) and any(w in lower_msg for w in ["today", "tomorrow", "monday", "tuesday", "wednesday", "thursday", "friday", "have"])):
             return ContextEngine._handle_student_schedule_query(user_message, context)
 
         # ----------------------------------------------------
         # 6. Student DB Direct Queries: Pending Assignments
         # E.g. "What assignments do I have?", "Show my pending assignments"
         # ----------------------------------------------------
-        if "assignment" in lower_msg and any(w in lower_msg for w in ["pending", "my", "what", "show", "list", "due"]):
+        if "assignment" in lower_msg and any(w in lower_msg for w in ["pending", "my", "what", "show", "list", "due", "tasks"]):
             return ContextEngine._handle_student_assignments_query(context)
 
         # ----------------------------------------------------
         # 7. Student DB Direct Queries: Upcoming Exams
         # E.g. "When are my exams?", "Show exam schedule"
         # ----------------------------------------------------
-        if any(keyword in lower_msg for keyword in ["my exam", "my exams", "exam schedule", "exam dates", "when is my exam"]):
+        if any(keyword in lower_msg for keyword in ["my exam", "my exams", "exam schedule", "exam dates", "when is my exam", "when are my exams"]):
             return ContextEngine._handle_student_exams_query(context)
 
         # ----------------------------------------------------
@@ -175,7 +178,6 @@ class ContextEngine:
     @staticmethod
     async def _handle_add_assignment_action(message: str, student: User, db: Session, context: Dict[str, Any]) -> Dict[str, Any]:
         # Extract course, title, and due date
-        # Fallback to smart parsing
         matched_course = "General"
         for c in context["enrolled_courses"]:
             if c["short_name"].lower() in message.lower() or c["name"].lower() in message.lower():
@@ -186,10 +188,10 @@ class ContextEngine:
         due_match = re.search(r'due\s+([A-Za-z0-9\s,\-]+)', message, re.IGNORECASE)
         due_date = due_match.group(1).strip() if due_match else "Upcoming Friday"
 
-        title_cleaned = re.sub(r'(add|create|new)\s+(an\s+)?assignment\s*(for\s+)?', '', message, flags=re.IGNORECASE)
+        title_cleaned = re.sub(r'(add|create|new|schedule)\s+(an?\s+)?assignment\s*(for\s+)?', '', message, flags=re.IGNORECASE)
         title_cleaned = re.sub(r'due\s+([A-Za-z0-9\s,\-]+)', '', title_cleaned, flags=re.IGNORECASE).strip(" :-")
-        if not title_cleaned or len(title_cleaned) < 3:
-            title_cleaned = f"{matched_course} Task Submission"
+        if not title_cleaned or len(title_cleaned) < 3 or title_cleaned.lower() == matched_course.lower():
+            title_cleaned = f"{matched_course} Course Submission"
 
         new_assignment = Assignment(
             student_id=student.id,
@@ -268,22 +270,22 @@ class ContextEngine:
         # Determine category
         lower = message.lower()
         category = "Student Services"
-        if "id card" in lower:
+        if "id card" in lower or "rfid" in lower:
             category = "ID card"
-        elif "exam" in lower or "grade" in lower or "re-eval" in lower:
+        elif "exam" in lower or "grade" in lower or "re-eval" in lower or "hall ticket" in lower:
             category = "Examination"
-        elif "wifi" in lower or "portal" in lower or "login" in lower or "it" in lower:
+        elif "wifi" in lower or "portal" in lower or "login" in lower or "it" in lower or "network" in lower:
             category = "IT support"
         elif "library" in lower or "book" in lower:
             category = "Library"
         elif "hostel" in lower or "room" in lower or "mess" in lower:
             category = "Hostel"
-        elif "fee" in lower or "payment" in lower or "receipt" in lower:
+        elif "fee" in lower or "payment" in lower or "receipt" in lower or "dues" in lower:
             category = "Fees"
 
         import random
         ticket_num = f"TICK-{random.randint(1000, 9999)}"
-        subject_text = message.replace("create ticket", "").replace("raise ticket", "").strip(" :-,")
+        subject_text = re.sub(r'^(create|raise|file|open)\s+(a\s+)?(support\s+)?ticket\s*[:\-]?', '', message, flags=re.IGNORECASE).strip()
         if not subject_text or len(subject_text) < 5:
             subject_text = f"Support Request: {category}"
 
@@ -383,23 +385,40 @@ class ContextEngine:
                 "student_context": context
             }
 
-        # Days
-        days_map = {"monday": "Monday", "tuesday": "Tuesday", "wednesday": "Wednesday", "thursday": "Thursday", "friday": "Friday"}
+        # Dynamic Day of Week Resolver
+        day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        now = datetime.now()
+        current_day_idx = now.weekday() # 0 = Monday, 6 = Sunday
+
         target_day = None
-        for k, v in days_map.items():
-            if k in message.lower():
-                target_day = v
+        for d in day_names:
+            if d.lower() in message.lower():
+                target_day = d
                 break
 
         if not target_day:
             if "tomorrow" in message.lower():
-                target_day = "Tuesday" # Sample sensible default
+                next_day_idx = (current_day_idx + 1) % 7
+                target_day = day_names[next_day_idx]
+            elif "today" in message.lower():
+                target_day = day_names[current_day_idx]
             else:
                 target_day = "Monday"
 
+        # If weekend, fallback to Monday schedule
+        if target_day in ["Saturday", "Sunday"]:
+            slots = [s for s in timetable if s["day"] == "Monday"]
+            return {
+                "reply": f"🎉 **{target_day} is a weekend—no classes scheduled!**\n\nHere is your upcoming schedule for **Monday**:\n\n" +
+                         "\n".join([f"- **{s['time']}**: **{s['course']}** ({s['course_name']}) at `{s['room']}`" for s in slots]),
+                "intent": "student_schedule",
+                "sources": [],
+                "student_context": context
+            }
+
         slots = [s for s in timetable if s["day"].lower() == target_day.lower()]
         if not slots:
-            slots = timetable[:3] # fallback
+            slots = [s for s in timetable if s["day"] == "Monday"]
 
         lines = [f"📅 **Your Classes for {target_day} ({context['program']} Sem {context['semester']}):**\n"]
         for s in slots:
@@ -471,8 +490,8 @@ class ContextEngine:
         2. Injects student profile & course context into LLM prompt.
         3. Calls local Llama 3.2:3b to synthesize a precise answer with citations.
         """
-        # Hybrid retrieval
-        chunks = await hybrid_retriever.search(query, top_k=4)
+        # Hybrid retrieval with minimum relevance score filter
+        chunks = await hybrid_retriever.search(query, top_k=4, min_score_threshold=0.003)
 
         # Build citations
         sources = []
